@@ -1,0 +1,114 @@
+{% extends 'home/base.html' %}
+
+{% block body %}
+<section class="bodySec" style="min-height:75vh">
+    <div class="search my-4 container">
+        <div class="container mx-auto w-75 text-center">
+            <h1>Welcome to My Personal Dictionary.</h1>
+            <h5 >The ultimate source of knowledge and inspiration!</h5>
+            <p class="fw-medium my-3">Whether you're a language enthusiast, a student, or just looking to expand your vocabulary, our site has got you covered. With a vast database of words and their meanings, as well as synonyms, antonyms, and example sentences, you'll be able to explore the depths of the English language like never before. Our site is designed to be user-friendly and easy to navigate, so you can find what you're looking for quickly and efficiently. Plus, with daily word of the day notifications, you'll never run out of new words to learn. Join our community of word lovers today and take your language skills to the next level!</p>
+        </div>
+        <div class="container my-4 srcBoxDiv d-flex justify-content-center ">
+            <form class="w-75 " role="search" id="srcFrm">
+                <input class="form-control mb-2 border-dark-subtle" placeholder="Search any word" aria-label="Search" id="srcInp" type="search">
+                <button class="btn btn-success" style="width:8rem;height:3rem;" id="srcBtn">Search</button>
+              </form>
+        </div>
+        <div class="conatainer my-4  d-flex justify-content-center">
+            <div class="w-75" id="meaningsBox"></div>
+        </div>
+    </div>
+</section>
+
+
+
+{% endblock %}
+
+
+{% block JS %}
+<script>
+    $("#srcFrm").submit(function(){
+        
+        srcInp=$("#srcInp").val()
+        if(srcInp !=""){
+            $("#srcBtn").html(`<div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>`)
+            $.ajax({
+                type: "POST",
+                url: "/",
+                data:  {
+                    word : srcInp,
+                    csrfmiddlewaretoken:"{{ csrf_token }}",
+                },            
+                success: async function (data) {
+
+                    if(data.apiResp.hasOwnProperty('title') == true){
+                        $("#meaningsBox").html(`<div class="ms-4 text-danger fw-semibold fs-4">${data.apiResp.title} for '${srcInp}'</div>`)
+
+                        await $("#srcInp").val("")
+                        await $("#srcBtn").html("Search")
+                    }
+                    else{
+                        setElement(data)     
+                    }           
+                },
+                
+            })
+        }
+        return false
+    })
+    
+    async function setElement(data){
+        root=data.apiResp[0].meanings
+        html =`<div class=""><audio controls style="width:12rem;"><source src=`
+        if(data.apiResp[0].phonetics.length != 0 && data.apiResp[0].phonetics[0].hasOwnProperty('audio') == true){
+                html += `"${data.apiResp[0].phonetics[0].audio}"`
+        }
+
+        html +=`type='audio/ogg'></audio><h3>${data.apiResp[0].word}</h3>`
+        
+        
+        $.each(root , function(i, val) {
+            if(i==3 ){
+                return false
+            }
+            html += `<em>${val.partOfSpeech}</em>`
+            val2=val.definitions
+            for(let j=0; j< val2.length; j++){
+                if(j==3 ){
+                    break;
+                }
+                html += `<div class="ms-4 my-3"><div>${j+1
+                }.&nbsp; ${val2[j].definition}</div>` 
+
+                if(val2[j].hasOwnProperty('example') == true){
+                    html += `<div class="text-secondary fw-medium mb-3 ms-3">"${val2[j].example}"</div>`
+                } 
+                    
+                if(j==0 && val2[j].synonyms.length !=0){  
+                    html += `<div class="fw-medium mt-2" id="similarWord">Similar : `
+                        
+                    $.each(val2[j].synonyms , function(k, val3) {
+                        html += `<span class="rounded-pill mx-2 px-3 border border-dark ">${val3}</span>`                       
+                    })
+                    html +=`</div>`
+                }
+                html +="</div>"
+                
+            }
+            
+        })
+
+
+        $("#meaningsBox").html(html)
+        
+        await $("#srcInp").val("")
+        await $("#srcBtn").html("Search")
+    }
+
+
+</script>
+{% endblock %}
+
+
