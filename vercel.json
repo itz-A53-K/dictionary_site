@@ -1,15 +1,18 @@
 {
-    "version": 2,
     "builds": [
-      {
-        "src": "myDictionary/wsgi.py",
-        "use": "@vercel/python"
-      }
+        {
+            "src": "dictionary_site/wsgi.py",
+            "use": "@vercel/python",
+            "config": {
+                "maxLambdaSize": "15mb",
+                "runtime": "python3.11"
+            }
+        }
     ],
     "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "myDictionary/wsgi"
-      }
+        {
+            "src": "/(.*)",
+            "dest": "dictionary_site/wsgi"
+        }
     ]
-  }
+}
