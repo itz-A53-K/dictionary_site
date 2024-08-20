@@ -2,14 +2,14 @@
     "version": 2,
     "builds": [
       {
-        "src": "dictionary_site/wsgi.py",
+        "src": "myDictionary/wsgi.py",
         "use": "@vercel/python"
       }
     ],
     "routes": [
       {
         "src": "/(.*)",
-        "dest": "dictionary_site/wsgi"
+        "dest": "myDictionary/wsgi"
       }
     ]
   }
